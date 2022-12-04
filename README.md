@@ -33,18 +33,25 @@ ST-Link V2 should be enough
 ## This software is intended to run on an old modified index PCBA (Mai 2021 "index-mobo-rev03"), with a STM32F103V mounted on it
 Lots of IOs have moved on the mobo since then. Here I list the IO's used in this software.
 
-//
-// Pinnig for MOBO REV3 (Mai21) with STM32F103 and additional modifications necessary
-// Z_DIR:     PB1
-// Z_STEP:    PE7
-// Z_EN:      PE9
-// Z_Limit:   PD14  => used for light detection
-// A_EN =>    PA3 wired to Z:MS2_CS_UART (0 Ohm resistor) [driver pin 12]
-//               needs to be 3.3V for A49xx and tree-state for TMC2208/2209
 
-// blTouch is connected to
-// Servo1     PB6  => control pin
-// A_Limit:   PC9  => used as IRQ, when the probe triggers
+Pinnig for MOBO REV3 (Mai21) with STM32F103 and additional modifications necessary
+
+Z_DIR:     PB1
+
+Z_STEP:    PE7
+
+Z_EN:      PE9
+
+Z_Limit:   PD14  => used for light detection
+
+A_EN =>    PA3 wired to Z:MS2_CS_UART (0 Ohm resistor) [driver pin 12]
+              needs to be 3.3V for A49xx and tree-state for TMC2208/2209
+
+### blTouch is connected to ### 
+
+Servo1     PB6  => control pin of blTouch
+
+A_Limit:   PC9  => used as IRQ, when the probe triggers
 
 The STM32F103 needs an additional pull-up resistor, for the USB interface to work properly
 => please check out the Bluepill schematic. There are some further modifications on
@@ -57,39 +64,60 @@ is build as usb-serial interface
 ## developpmentstate
 prof of idea
 
-# openpnp configurations
+## openpnp configurations ##
+
 Driver: ttyACMx (on linux)
+
 Baud: 115200
+
 parity: None
+
 Data Bits: Eight
+
 Stop Bits: One
+
 Flow Control: Off
 
 Gcode (driver for blTouch):
+
 ACTUATE_COUBLE_COMMAND:  M280 P0 S{DoubleValue}
+
 ACTUATE_BOOLEAN_COMMAND: M280 P0 {True: S10}{False: S160}
+
 ACTUATE_STRING_COMMAND: {StringValue}  // most probably not needed
+
 ACTUATOR_READ_COMMAND: M489
+
 ACTUATOR_READ_REGEX: (?<Value>-?\d+)
 
-Acutuator settings:
+
+### Acutuator settings: ###
+
 Value Type: Double
+
 ON Value 1.000
+
 OFF Value 16.000
+
 // this is due to the fact, that openpnp-python interface always uses the double actuator, as of my experiance
 
 Gcode (driver for motor control)
+
 G28        Home to the center (light barrier position)
+
 G0 Z{absolute position in mm} F{max speed in mm/sec}     
                   Speed settings stay till
                   next home or next rewrite
                   and are valied for W and Z axis
+                  
 G0 W{absolute position in mm}                            
                   W and Z are independent logical axis
                   which are obviously connected with the belt
+                  
 M203 W{offset in mm}
                  To adjust, so that both axes W and Z can same altitude
                  positions on the pick and place machine
+                 
 M114             Read positions of W and Z
 
 M115             Read FW version
